@@ -2,14 +2,14 @@
 	let { pattern, label = '' }: { pattern: string; label?: string } = $props();
 
 	const cells = [
-		{ index: 9, row: 1, col: 2 },
+		{ index: 11, row: 1, col: 2 },
 		{ index: 10, row: 1, col: 3 },
-		{ index: 11, row: 1, col: 4 },
+		{ index: 9, row: 1, col: 4 },
 		{ index: 15, row: 2, col: 1 },
 		{ index: 0, row: 2, col: 2 },
 		{ index: 1, row: 2, col: 3 },
 		{ index: 2, row: 2, col: 4 },
-		{ index: 18, row: 2, col: 5 },
+		{ index: 20, row: 2, col: 5 },
 		{ index: 16, row: 3, col: 1 },
 		{ index: 3, row: 3, col: 2 },
 		{ index: 4, row: 3, col: 3 },
@@ -19,7 +19,7 @@
 		{ index: 6, row: 4, col: 2 },
 		{ index: 7, row: 4, col: 3 },
 		{ index: 8, row: 4, col: 4 },
-		{ index: 20, row: 4, col: 5 },
+		{ index: 18, row: 4, col: 5 },
 		{ index: 12, row: 5, col: 2 },
 		{ index: 13, row: 5, col: 3 },
 		{ index: 14, row: 5, col: 4 }
