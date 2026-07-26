@@ -39,7 +39,9 @@
 <style>
 	.diagram {
 		display: grid;
-		grid-template: repeat(5, 1fr) / repeat(5, 1fr);
+		grid-template:
+			0.5fr repeat(3, 1fr) 0.5fr /
+			0.5fr repeat(3, 1fr) 0.5fr;
 		gap: 2px;
 		aspect-ratio: 1;
 		width: 100%;
