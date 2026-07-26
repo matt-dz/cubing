@@ -8,5 +8,5 @@
 </svelte:head>
 
 <main class="home">
-	<a class="trainer-link" href={resolve('/oll')}>OLL Trainer</a>
+	<a class="trainer-link" href={resolve('/oll-trainer')}>OLL Trainer</a>
 </main>
