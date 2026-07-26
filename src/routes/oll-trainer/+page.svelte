@@ -225,11 +225,12 @@
 </script>
 
 <svelte:head>
-	<title>OLL Trainer</title>
+	<title>3×3 OLL Trainer – All 57 Cases | Cubing</title>
 	<meta
 		name="description"
-		content="Practice all 57 Rubik's Cube OLL cases with balanced, varied scrambles."
+		content="Practice all 57 Rubik's Cube 3×3 OLL cases with balanced case rotation and varied scrambles."
 	/>
+	<link rel="canonical" href="https://cubing.mutex.nyc/oll-trainer" />
 </svelte:head>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -238,7 +239,7 @@
 	<header>
 		<a class="brand" href={resolve('/')} aria-label="OLL Trainer home">
 			<span class="brand-mark"></span>
-			<span>OLL Trainer</span>
+			<h1>3×3 OLL Trainer</h1>
 		</a>
 		<button class="case-button" onclick={() => (selectorOpen = true)}>
 			<span>{selectedCount}</span> cases
@@ -313,7 +314,7 @@
 	</section>
 
 	<footer>
-		<span>Every selected case appears once before the deck reshuffles.</span>
+		<span>Practice all 57 3×3 OLL cases with balanced rotation and varied scrambles.</span>
 		<a href="https://speedcubedb.com/a/3x3/OLL" target="_blank" rel="noreferrer"
 			>Algorithms: SpeedCubeDB ↗</a
 		>

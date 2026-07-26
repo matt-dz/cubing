@@ -68,6 +68,7 @@ main {
 	display: flex;
 	gap: 12px;
 	align-items: center;
+	margin: 0;
 	color: #a1a89d;
 	font-size: 10px;
 	font-weight: 750;
@@ -168,11 +169,17 @@ header {
 	text-decoration: none;
 }
 
+.brand h1 {
+	margin: 0;
+	font: inherit;
+	letter-spacing: inherit;
+}
+
 .brand-mark {
-	width: 12px;
-	height: 12px;
-	background: var(--accent);
-	box-shadow: 0 0 16px rgba(143, 183, 232, 0.22);
+	width: 16px;
+	height: 16px;
+	flex: none;
+	background: url('../lib/assets/favicon.svg') center / contain no-repeat;
 }
 
 .case-button,

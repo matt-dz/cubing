@@ -3,16 +3,20 @@
 </script>
 
 <svelte:head>
-	<title>Cubing</title>
-	<meta name="description" content="Personal Rubik's Cube speedsolving tools." />
+	<title>3×3 Speedcubing Tools | Cubing</title>
+	<meta
+		name="description"
+		content="Rubik's Cube 3×3 speedsolving tools, including an OLL trainer for all 57 cases."
+	/>
+	<link rel="canonical" href="https://cubing.mutex.nyc/" />
 </svelte:head>
 
 <main class="home">
 	<section class="home-content">
-		<div class="home-brand">
+		<h1 class="home-brand">
 			<span class="brand-mark"></span>
 			<span>CUBING</span>
-		</div>
+		</h1>
 
 		<a class="trainer-link" href={resolve('/oll-trainer')}>
 			<span>OLL Trainer</span>
