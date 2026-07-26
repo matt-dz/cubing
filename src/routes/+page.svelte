@@ -1,19 +1,29 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
 	import OllDiagram from '$lib/OllDiagram.svelte';
+	import scrambleData from '$lib/generated/oll-scrambles.json';
 	import { ollCases, ollGroups, type OllCase } from '$lib/oll';
 
 	const storageKey = 'oll-trainer-selected-v1';
-	const aufs = ['', 'U', 'U2', "U'"];
+	type Orientation = '0' | 'U' | 'U2' | "U'";
+	type ScramblePools = Record<string, Record<Orientation, string[]>>;
+
+	const orientations = scrambleData.orientations as Orientation[];
+	const scramblePools = scrambleData.cases as ScramblePools;
 
 	let selectedIds = $state<number[]>(ollCases.map((oll) => oll.id));
 	let deck = $state<number[]>([]);
 	let current = $state<OllCase | null>(null);
-	let currentSetup = $state('');
+	let currentScramble = $state('');
 	let revealed = $state(false);
 	let selectorOpen = $state(false);
 	let copied = $state(false);
 	let cyclePosition = $state(0);
+	let orientationDecks: Record<number, Orientation[]> = {};
+	let scrambleDecks: Record<string, string[]> = {};
+	let lastOrientations: Partial<Record<number, Orientation>> = {};
+	let lastScrambles: Record<string, string> = {};
 
 	const selectedCount = $derived(selectedIds.length);
 	const selectedSet = $derived(new Set(selectedIds));
@@ -37,7 +47,7 @@
 		nextCase();
 	});
 
-	function shuffle(values: number[]) {
+	function shuffle<T>(values: readonly T[]) {
 		const shuffled = [...values];
 		for (let i = shuffled.length - 1; i > 0; i -= 1) {
 			const j = Math.floor(Math.random() * (i + 1));
@@ -54,14 +64,65 @@
 		cyclePosition = 0;
 	}
 
+	function drawOrientation(caseId: number) {
+		let orientationDeck = orientationDecks[caseId] ?? [];
+
+		if (orientationDeck.length === 0) {
+			orientationDeck = shuffle(orientations);
+			const lastOrientation = lastOrientations[caseId];
+			const nextIndex = orientationDeck.length - 1;
+
+			if (orientationDeck.length > 1 && orientationDeck[nextIndex] === lastOrientation) {
+				[orientationDeck[0], orientationDeck[nextIndex]] = [
+					orientationDeck[nextIndex],
+					orientationDeck[0]
+				];
+			}
+		}
+
+		const orientation = orientationDeck.pop();
+		if (!orientation) throw new Error(`No orientations available for OLL ${caseId}.`);
+
+		orientationDecks[caseId] = orientationDeck;
+		lastOrientations[caseId] = orientation;
+		return orientation;
+	}
+
+	function drawScramble(caseId: number, orientation: Orientation) {
+		const poolKey = `${caseId}:${orientation}`;
+		let scrambleDeck = scrambleDecks[poolKey] ?? [];
+
+		if (scrambleDeck.length === 0) {
+			const sourcePool = scramblePools[String(caseId)]?.[orientation];
+			if (!sourcePool?.length) {
+				throw new Error(`No scrambles available for OLL ${caseId}, orientation ${orientation}.`);
+			}
+
+			scrambleDeck = shuffle(sourcePool);
+			const lastScramble = lastScrambles[poolKey];
+			const nextIndex = scrambleDeck.length - 1;
+
+			if (scrambleDeck.length > 1 && scrambleDeck[nextIndex] === lastScramble) {
+				[scrambleDeck[0], scrambleDeck[nextIndex]] = [scrambleDeck[nextIndex], scrambleDeck[0]];
+			}
+		}
+
+		const scramble = scrambleDeck.pop();
+		if (!scramble) throw new Error(`Could not draw a scramble for OLL ${caseId}.`);
+
+		scrambleDecks[poolKey] = scrambleDeck;
+		lastScrambles[poolKey] = scramble;
+		return scramble;
+	}
+
 	function nextCase() {
 		if (selectedIds.length === 0) return;
 		if (deck.length === 0) refillDeck();
 
 		const id = deck.pop();
 		current = ollCases.find((oll) => oll.id === id) ?? ollCases[0];
-		const auf = aufs[Math.floor(Math.random() * aufs.length)];
-		currentSetup = `${current.setup}${auf ? ` ${auf}` : ''}`;
+		const orientation = drawOrientation(current.id);
+		currentScramble = drawScramble(current.id, orientation);
 		revealed = false;
 		copied = false;
 		cyclePosition += 1;
@@ -82,9 +143,11 @@
 
 	function setGroup(group: string, enabled: boolean) {
 		const groupIds = ollCases.filter((oll) => oll.group === group).map((oll) => oll.id);
-		const next = new Set(selectedIds);
-		for (const id of groupIds) enabled ? next.add(id) : next.delete(id);
-		selectedIds = [...next].sort((a, b) => a - b);
+		selectedIds = (
+			enabled
+				? [...selectedIds, ...groupIds.filter((id) => !selectedIds.includes(id))]
+				: selectedIds.filter((id) => !groupIds.includes(id))
+		).sort((a, b) => a - b);
 		persistSelection();
 	}
 
@@ -104,9 +167,9 @@
 		if (!current || !selectedSet.has(current.id)) nextCase();
 	}
 
-	async function copySetup() {
-		if (!currentSetup) return;
-		await navigator.clipboard.writeText(currentSetup);
+	async function copyScramble() {
+		if (!currentScramble) return;
+		await navigator.clipboard.writeText(currentScramble);
 		copied = true;
 		window.setTimeout(() => (copied = false), 1200);
 	}
@@ -142,7 +205,7 @@
 
 <main>
 	<header>
-		<a class="brand" href="/" aria-label="OLL Trainer home">
+		<a class="brand" href={resolve('/')} aria-label="OLL Trainer home">
 			<span class="brand-mark"></span>
 			<span>OLL / TRAINER</span>
 		</a>
@@ -153,14 +216,14 @@
 
 	<section class="trainer" aria-live="polite">
 		<div class="eyebrow">
-			<span>SETUP</span>
+			<span>SCRAMBLE</span>
 			{#if current}
 				<span>{cyclePosition} / {selectedCount}</span>
 			{/if}
 		</div>
 
-		<button class="scramble" onclick={copySetup} aria-label="Copy setup algorithm">
-			{currentSetup || 'Loading cases…'}
+		<button class="scramble" onclick={copyScramble} aria-label="Copy scramble">
+			{currentScramble || 'Loading cases…'}
 			<span class:visible={copied} class="copy-note">{copied ? 'Copied' : 'Click to copy'}</span>
 		</button>
 
@@ -221,7 +284,7 @@
 			</div>
 
 			<div class="groups">
-				{#each ollGroups as group}
+				{#each ollGroups as group (group)}
 					{@const groupCases = ollCases.filter((oll) => oll.group === group)}
 					{@const groupSelected = groupCases.filter((oll) => selectedSet.has(oll.id)).length}
 					<section class="case-group">
@@ -235,7 +298,7 @@
 							</button>
 						</div>
 						<div class="case-grid">
-							{#each groupCases as oll}
+							{#each groupCases as oll (oll.id)}
 								<button
 									class:selected={selectedSet.has(oll.id)}
 									class="case-card"

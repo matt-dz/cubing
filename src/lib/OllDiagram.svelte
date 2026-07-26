@@ -27,7 +27,7 @@
 </script>
 
 <div class="diagram" role="img" aria-label={label}>
-	{#each cells as cell}
+	{#each cells as cell (cell.index)}
 		<span
 			class:yellow={pattern[cell.index] === 'y'}
 			class:top={cell.row >= 2 && cell.row <= 4 && cell.col >= 2 && cell.col <= 4}
