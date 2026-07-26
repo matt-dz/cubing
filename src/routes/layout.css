@@ -56,6 +56,35 @@ main {
 	padding: 0 44px;
 }
 
+.home {
+	place-items: center;
+	padding: 24px;
+}
+
+.trainer-link {
+	display: inline-flex;
+	min-width: 190px;
+	justify-content: center;
+	align-items: center;
+	padding: 18px 26px;
+	border: 1px solid var(--accent);
+	border-radius: 6px;
+	background: var(--accent);
+	color: #11140e;
+	font-size: 13px;
+	font-weight: 750;
+	letter-spacing: 0.04em;
+	text-decoration: none;
+	transition:
+		transform 150ms ease,
+		box-shadow 150ms ease;
+}
+
+.trainer-link:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 10px 30px rgba(216, 250, 101, 0.12);
+}
+
 header {
 	display: flex;
 	align-items: center;
