@@ -90,7 +90,6 @@ header {
 	align-items: center;
 	justify-content: space-between;
 	height: 84px;
-	border-bottom: 1px solid var(--line);
 }
 
 .brand {
@@ -113,6 +112,7 @@ header {
 
 .case-button,
 .reveal,
+.solution-close,
 .selector-tools button,
 .group-heading button,
 .close {
@@ -204,7 +204,7 @@ header {
 .solution-area {
 	display: flex;
 	width: min(680px, 100%);
-	min-height: 130px;
+	height: 180px;
 	justify-content: center;
 	align-items: flex-start;
 	padding-top: 10px;
@@ -233,6 +233,12 @@ header {
 	background: color-mix(in srgb, var(--panel) 82%, transparent);
 }
 
+.solution-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+}
+
 .case-identity {
 	display: flex;
 	gap: 13px;
@@ -255,6 +261,17 @@ header {
 	margin-top: 2px;
 	color: var(--muted);
 	font-size: 11px;
+}
+
+.solution-close {
+	padding: 6px 4px;
+	color: #6f766d;
+	font-size: 11px;
+	transition: color 150ms ease;
+}
+
+.solution-close:hover {
+	color: #b4bbb0;
 }
 
 .solution p {
@@ -304,7 +321,6 @@ footer {
 	min-height: 68px;
 	justify-content: space-between;
 	align-items: center;
-	border-top: 1px solid var(--line);
 	color: #5f665d;
 	font-size: 10px;
 }
@@ -524,7 +540,7 @@ footer a:hover {
 	}
 
 	.solution-area {
-		min-height: 150px;
+		height: 190px;
 	}
 
 	footer {

@@ -229,7 +229,7 @@
 	<header>
 		<a class="brand" href={resolve('/')} aria-label="OLL Trainer home">
 			<span class="brand-mark"></span>
-			<span>OLL / TRAINER</span>
+			<span>OLL Trainer</span>
 		</a>
 		<button class="case-button" onclick={() => (selectorOpen = true)}>
 			<span>{selectedCount}</span> cases
@@ -255,22 +255,34 @@
 			<span class:visible={copied} class="copy-note">{copied ? 'Copied' : 'Click to copy'}</span>
 		</button>
 
-		<div class="solution-area">
+		<div class="solution-area" id="algorithm-solution">
 			{#if current && revealed}
 				<div class="solution">
-					<div class="case-identity">
-						<div class="solution-diagram">
-							<OllDiagram pattern={current.pattern} label={`OLL ${current.id} diagram`} />
+					<div class="solution-header">
+						<div class="case-identity">
+							<div class="solution-diagram">
+								<OllDiagram pattern={current.pattern} label={`OLL ${current.id} diagram`} />
+							</div>
+							<div>
+								<span>OLL {current.id}</span>
+								<small>{current.group}</small>
+							</div>
 						</div>
-						<div>
-							<span>OLL {current.id}</span>
-							<small>{current.group}</small>
-						</div>
+						<button
+							class="solution-close"
+							onclick={() => (revealed = false)}
+							aria-label="Close algorithm">Close</button
+						>
 					</div>
 					<p>{current.algorithm}</p>
 				</div>
 			{:else}
-				<button class="reveal" onclick={() => (revealed = true)}>Reveal algorithm</button>
+				<button
+					class="reveal"
+					onclick={() => (revealed = true)}
+					aria-controls="algorithm-solution"
+					aria-expanded="false">Reveal algorithm</button
+				>
 			{/if}
 		</div>
 
