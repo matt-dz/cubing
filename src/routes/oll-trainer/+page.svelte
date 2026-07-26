@@ -5,14 +5,24 @@
 	import scrambleData from '$lib/generated/oll-scrambles.json';
 	import { ollCases, ollGroups, type OllCase } from '$lib/oll';
 
-	const storageKey = 'oll-trainer-selected-v1';
+	const selectionStorageKey = 'oll-trainer-selected-v1';
+	const starredStorageKey = 'oll-trainer-starred-v1';
 	type Orientation = '0' | 'U' | 'U2' | "U'";
+	type TrainingPhase = 'regular' | 'starred';
 	type ScramblePools = Record<string, Record<Orientation, string[]>>;
+	type HistoryEntry = {
+		caseId: number;
+		scramble: string;
+		phase: TrainingPhase;
+		cyclePosition: number;
+		cycleTotal: number;
+	};
 
 	const orientations = scrambleData.orientations as Orientation[];
 	const scramblePools = scrambleData.cases as ScramblePools;
 
 	let selectedIds = $state<number[]>(ollCases.map((oll) => oll.id));
+	let starredIds = $state<number[]>([]);
 	let deck = $state<number[]>([]);
 	let current = $state<OllCase | null>(null);
 	let currentScramble = $state('');
@@ -20,7 +30,11 @@
 	let selectorOpen = $state(false);
 	let helpOpen = $state(false);
 	let copied = $state(false);
+	let phase = $state<TrainingPhase>('regular');
 	let cyclePosition = $state(0);
+	let cycleTotal = $state(0);
+	let history = $state<HistoryEntry[]>([]);
+	let historyIndex = $state(-1);
 	let orientationDecks: Record<number, Orientation[]> = {};
 	let scrambleDecks: Record<string, string[]> = {};
 	let lastOrientations: Partial<Record<number, Orientation>> = {};
@@ -28,25 +42,35 @@
 
 	const selectedCount = $derived(selectedIds.length);
 	const selectedSet = $derived(new Set(selectedIds));
+	const currentIsStarred = $derived(current ? starredIds.includes(current.id) : false);
+	const canGoPrevious = $derived(historyIndex > 0);
 	const scrambleLines = $derived(splitScramble(currentScramble));
 
 	onMount(() => {
-		const saved = localStorage.getItem(storageKey);
-		if (saved) {
-			try {
-				const parsed = JSON.parse(saved);
-				if (
-					Array.isArray(parsed) &&
-					parsed.every((id) => Number.isInteger(id) && id >= 1 && id <= 57)
-				) {
-					selectedIds = [...new Set(parsed)];
-				}
-			} catch {
-				localStorage.removeItem(storageKey);
-			}
-		}
+		selectedIds = readStoredIds(selectionStorageKey, selectedIds);
+		starredIds = readStoredIds(starredStorageKey, []);
 		nextCase();
 	});
+
+	function readStoredIds(key: string, fallback: number[]) {
+		const saved = localStorage.getItem(key);
+		if (!saved) return fallback;
+
+		try {
+			const parsed = JSON.parse(saved);
+			if (
+				Array.isArray(parsed) &&
+				parsed.every((id) => Number.isInteger(id) && id >= 1 && id <= 57)
+			) {
+				return [...new Set<number>(parsed)];
+			}
+		} catch {
+			// Invalid local data falls through to the default.
+		}
+
+		localStorage.removeItem(key);
+		return fallback;
+	}
 
 	function shuffle<T>(values: readonly T[]) {
 		const shuffled = [...values];
@@ -78,12 +102,26 @@
 		return [moves.slice(0, bestSplit).join(' '), moves.slice(bestSplit).join(' ')];
 	}
 
-	function refillDeck() {
-		deck = shuffle(selectedIds);
+	function refillDeck(ids: number[], nextPhase: TrainingPhase) {
+		phase = nextPhase;
+		deck = shuffle(ids);
 		if (deck.length > 1 && current && deck[deck.length - 1] === current.id) {
 			[deck[0], deck[deck.length - 1]] = [deck[deck.length - 1], deck[0]];
 		}
 		cyclePosition = 0;
+		cycleTotal = deck.length;
+	}
+
+	function prepareNextDeck() {
+		if (
+			starredIds.length > 0 &&
+			(phase === 'starred' || (phase === 'regular' && cyclePosition > 0))
+		) {
+			refillDeck(starredIds, 'starred');
+			return;
+		}
+
+		refillDeck(selectedIds, 'regular');
 	}
 
 	function drawOrientation(caseId: number) {
@@ -138,29 +176,79 @@
 	}
 
 	function nextCase() {
+		if (historyIndex < history.length - 1) {
+			historyIndex += 1;
+			showHistoryEntry(history[historyIndex]);
+			return;
+		}
+
 		if (selectedIds.length === 0) {
 			current = null;
 			currentScramble = '';
 			revealed = false;
 			copied = false;
+			phase = 'regular';
+			cyclePosition = 0;
+			cycleTotal = 0;
+			history = [];
+			historyIndex = -1;
 			return;
 		}
-		if (deck.length === 0) refillDeck();
+		if (deck.length === 0) prepareNextDeck();
 
 		const id = deck.pop();
-		current = ollCases.find((oll) => oll.id === id) ?? ollCases[0];
-		const orientation = drawOrientation(current.id);
-		currentScramble = drawScramble(current.id, orientation);
+		const nextOllCase = ollCases.find((oll) => oll.id === id) ?? ollCases[0];
+		const orientation = drawOrientation(nextOllCase.id);
+		const scramble = drawScramble(nextOllCase.id, orientation);
+		cyclePosition += 1;
+
+		const entry: HistoryEntry = {
+			caseId: nextOllCase.id,
+			scramble,
+			phase,
+			cyclePosition,
+			cycleTotal
+		};
+		history = [...history, entry];
+		historyIndex = history.length - 1;
+		showHistoryEntry(entry);
+	}
+
+	function previousCase() {
+		if (!canGoPrevious) return;
+		historyIndex -= 1;
+		showHistoryEntry(history[historyIndex]);
+	}
+
+	function showHistoryEntry(entry: HistoryEntry) {
+		current = ollCases.find((oll) => oll.id === entry.caseId) ?? ollCases[0];
+		currentScramble = entry.scramble;
+		phase = entry.phase;
+		cyclePosition = entry.cyclePosition;
+		cycleTotal = entry.cycleTotal;
 		revealed = false;
 		copied = false;
-		cyclePosition += 1;
 	}
 
 	function persistSelection() {
-		localStorage.setItem(storageKey, JSON.stringify(selectedIds));
+		localStorage.setItem(selectionStorageKey, JSON.stringify(selectedIds));
 		deck = [];
+		phase = 'regular';
 		cyclePosition = 0;
+		cycleTotal = 0;
+		history = [];
+		historyIndex = -1;
 		if (selectedIds.length === 0) nextCase();
+	}
+
+	function toggleCurrentStar() {
+		if (!current) return;
+		const currentId = current.id;
+
+		starredIds = currentIsStarred
+			? starredIds.filter((id) => id !== currentId)
+			: [...starredIds, currentId].sort((a, b) => a - b);
+		localStorage.setItem(starredStorageKey, JSON.stringify(starredIds));
 	}
 
 	function toggleCase(id: number) {
@@ -196,7 +284,7 @@
 			nextCase();
 			return;
 		}
-		if (!current || !selectedSet.has(current.id)) nextCase();
+		if (!current || !selectedSet.has(current.id) || cycleTotal === 0) nextCase();
 	}
 
 	async function copyScramble() {
@@ -212,16 +300,34 @@
 			helpOpen = false;
 			return;
 		}
+
+		const targetIsInteractive =
+			event.target instanceof HTMLElement &&
+			['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName);
+
 		if (
-			event.code !== 'Space' ||
-			selectorOpen ||
-			helpOpen ||
-			event.repeat ||
-			(event.target instanceof HTMLElement &&
-				['BUTTON', 'A', 'INPUT'].includes(event.target.tagName))
+			event.key.toLowerCase() === 's' &&
+			!selectorOpen &&
+			!helpOpen &&
+			!event.repeat &&
+			!targetIsInteractive
 		) {
+			event.preventDefault();
+			toggleCurrentStar();
 			return;
 		}
+
+		if (selectorOpen || helpOpen || event.repeat || targetIsInteractive) {
+			return;
+		}
+
+		if (event.key === 'ArrowLeft') {
+			event.preventDefault();
+			previousCase();
+			return;
+		}
+
+		if (event.code !== 'Space' && event.key !== 'ArrowRight') return;
 		event.preventDefault();
 		nextCase();
 	}
@@ -251,9 +357,11 @@
 
 	<section class="trainer" aria-live="polite">
 		<div class="eyebrow">
-			<span>SCRAMBLE</span>
+			<span class:review-phase={phase === 'starred'}>
+				{phase === 'starred' ? 'STARRED REVIEW' : 'SCRAMBLE'}
+			</span>
 			{#if current}
-				<span>{cyclePosition} / {selectedCount}</span>
+				<span>{cyclePosition} / {cycleTotal}</span>
 			{/if}
 		</div>
 
@@ -308,11 +416,33 @@
 			{/if}
 		</div>
 
-		{#if selectedCount > 0}
-			<button class="next" onclick={nextCase}>
-				Next case
-				<kbd>Space</kbd>
-			</button>
+		{#if selectedCount > 0 && current}
+			<div class="trainer-controls">
+				<button
+					class:active={currentIsStarred}
+					class="star-case"
+					onclick={toggleCurrentStar}
+					aria-pressed={currentIsStarred}
+					aria-label={`${currentIsStarred ? 'Unstar' : 'Star'} OLL ${current.id}`}
+				>
+					<span aria-hidden="true">{currentIsStarred ? '★' : '☆'}</span>
+					{currentIsStarred ? 'Unstar' : 'Star case'}
+					<kbd>S</kbd>
+				</button>
+				<div class="case-navigation">
+					<button class="previous" onclick={previousCase} disabled={!canGoPrevious}>
+						Previous
+						<kbd>←</kbd>
+					</button>
+					<button class="next" onclick={nextCase}>
+						Next case
+						<span class="key-hints">
+							<kbd>Space</kbd>
+							<kbd>→</kbd>
+						</span>
+					</button>
+				</div>
+			</div>
 		{/if}
 	</section>
 
@@ -363,12 +493,21 @@
 				</li>
 				<li>
 					<strong>Advance when ready.</strong>
-					<span>Press Next case or Space. Every selected case appears once per shuffled cycle.</span
+					<span
+						>Use Next, Space, or Right Arrow. Previous or Left Arrow restores the exact earlier
+						scramble.</span
 					>
 				</li>
 				<li>
 					<strong>Reveal only if needed.</strong>
 					<span>The reveal shows the case, group, and reference algorithm.</span>
+				</li>
+				<li>
+					<strong>Star cases for another pass.</strong>
+					<span
+						>Press S or Star case. After the normal cycle, starred review repeats until you unstar
+						every case.</span
+					>
 				</li>
 			</ol>
 
