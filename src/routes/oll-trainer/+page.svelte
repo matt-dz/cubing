@@ -314,7 +314,6 @@
 	</section>
 
 	<footer>
-		<span>Practice all 57 3×3 OLL cases with balanced rotation and varied scrambles.</span>
 		<a href="https://speedcubedb.com/a/3x3/OLL" target="_blank" rel="noreferrer"
 			>Algorithms: SpeedCubeDB ↗</a
 		>
