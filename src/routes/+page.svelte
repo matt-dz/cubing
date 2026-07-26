@@ -27,6 +27,7 @@
 
 	const selectedCount = $derived(selectedIds.length);
 	const selectedSet = $derived(new Set(selectedIds));
+	const scrambleLines = $derived(splitScramble(currentScramble));
 
 	onMount(() => {
 		const saved = localStorage.getItem(storageKey);
@@ -54,6 +55,27 @@
 			[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
 		}
 		return shuffled;
+	}
+
+	function splitScramble(scramble: string) {
+		const moves = scramble.split(/\s+/).filter(Boolean);
+		if (moves.length < 2) return moves;
+
+		let bestSplit = 1;
+		let smallestDifference = Number.POSITIVE_INFINITY;
+
+		for (let index = 1; index < moves.length; index += 1) {
+			const firstLength = moves.slice(0, index).join(' ').length;
+			const secondLength = moves.slice(index).join(' ').length;
+			const difference = Math.abs(firstLength - secondLength);
+
+			if (difference < smallestDifference) {
+				bestSplit = index;
+				smallestDifference = difference;
+			}
+		}
+
+		return [moves.slice(0, bestSplit).join(' '), moves.slice(bestSplit).join(' ')];
 	}
 
 	function refillDeck() {
@@ -223,7 +245,13 @@
 		</div>
 
 		<button class="scramble" onclick={copyScramble} aria-label="Copy scramble">
-			{currentScramble || 'Loading cases…'}
+			{#if currentScramble}
+				{#each scrambleLines as line (line)}
+					<span class="scramble-line">{line}</span>
+				{/each}
+			{:else}
+				<span class="scramble-line">Loading cases…</span>
+			{/if}
 			<span class:visible={copied} class="copy-note">{copied ? 'Copied' : 'Click to copy'}</span>
 		</button>
 

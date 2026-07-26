@@ -130,21 +130,28 @@ header {
 
 .scramble {
 	position: relative;
-	display: block;
+	display: flex;
 	width: 100%;
 	min-height: 180px;
 	padding: 34px 20px;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
 	border: 0;
 	background: transparent;
 	color: #f4f5ef;
 	cursor: copy;
 	font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-	font-size: clamp(26px, 4.25vw, 58px);
+	font-size: clamp(16px, 5vw, 48px);
 	font-weight: 570;
 	line-height: 1.45;
 	letter-spacing: -0.045em;
 	text-align: center;
-	text-wrap: balance;
+}
+
+.scramble-line {
+	display: block;
+	white-space: nowrap;
 }
 
 .copy-note {
@@ -485,7 +492,6 @@ footer a:hover {
 	.scramble {
 		min-height: 190px;
 		padding-inline: 0;
-		font-size: clamp(24px, 8vw, 38px);
 	}
 
 	.solution-area {
