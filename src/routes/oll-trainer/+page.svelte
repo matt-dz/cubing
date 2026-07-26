@@ -18,6 +18,7 @@
 	let currentScramble = $state('');
 	let revealed = $state(false);
 	let selectorOpen = $state(false);
+	let helpOpen = $state(false);
 	let copied = $state(false);
 	let cyclePosition = $state(0);
 	let orientationDecks: Record<number, Orientation[]> = {};
@@ -206,13 +207,15 @@
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape' && selectorOpen) {
-			closeSelector();
+		if (event.key === 'Escape' && (selectorOpen || helpOpen)) {
+			if (selectorOpen) closeSelector();
+			helpOpen = false;
 			return;
 		}
 		if (
 			event.code !== 'Space' ||
 			selectorOpen ||
+			helpOpen ||
 			event.repeat ||
 			(event.target instanceof HTMLElement &&
 				['BUTTON', 'A', 'INPUT'].includes(event.target.tagName))
@@ -319,6 +322,62 @@
 		>
 	</footer>
 </main>
+
+<button
+	class="help-button"
+	onclick={() => (helpOpen = true)}
+	aria-label="How the OLL trainer works"
+	aria-controls="trainer-help"
+	aria-expanded={helpOpen}>?</button
+>
+
+{#if helpOpen}
+	<div
+		class="backdrop"
+		role="presentation"
+		onclick={(event) => event.target === event.currentTarget && (helpOpen = false)}
+	>
+		<div
+			class="help-panel"
+			id="trainer-help"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="help-title"
+		>
+			<div class="help-header">
+				<div>
+					<span class="eyebrow-label">HELP</span>
+					<h2 id="help-title">How the trainer works</h2>
+				</div>
+				<button class="close" onclick={() => (helpOpen = false)} aria-label="Close help">×</button>
+			</div>
+
+			<ol class="help-steps">
+				<li>
+					<strong>Choose your cases.</strong>
+					<span>All 57 are selected by default. Your selection is saved on this browser.</span>
+				</li>
+				<li>
+					<strong>Apply the scramble.</strong>
+					<span>Click it to copy, then identify and solve the OLL case on your cube.</span>
+				</li>
+				<li>
+					<strong>Advance when ready.</strong>
+					<span>Press Next case or Space. Every selected case appears once per shuffled cycle.</span
+					>
+				</li>
+				<li>
+					<strong>Reveal only if needed.</strong>
+					<span>The reveal shows the case, group, and reference algorithm.</span>
+				</li>
+			</ol>
+
+			<p class="help-note">
+				Each case rotates through four orientations and ten different scrambles per orientation.
+			</p>
+		</div>
+	</div>
+{/if}
 
 {#if selectorOpen}
 	<div
