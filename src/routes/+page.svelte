@@ -8,5 +8,15 @@
 </svelte:head>
 
 <main class="home">
-	<a class="trainer-link" href={resolve('/oll-trainer')}>OLL Trainer</a>
+	<section class="home-content">
+		<div class="home-brand">
+			<span class="brand-mark"></span>
+			<span>CUBING</span>
+		</div>
+
+		<a class="trainer-link" href={resolve('/oll-trainer')}>
+			<span>OLL Trainer</span>
+			<span class="trainer-link-arrow" aria-hidden="true">→</span>
+		</a>
+	</section>
 </main>
