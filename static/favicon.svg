@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><metadata><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/"><rdf:Description><dc:creator>RealFaviconGenerator</dc:creator><dc:source>https://realfavicongenerator.net</dc:source></rdf:Description></rdf:RDF></metadata><title>Cube</title><g stroke="#0d100d" stroke-linecap="round" stroke-linejoin="round">
+		<path fill="#8fb7e8" stroke-width="1.5" d="M16 1.5 30 8.5l-14 7-14-7z"></path>
+		<path fill="#7fb58d" stroke-width="1.5" d="m2 8.5 14 7v15l-14-7z"></path>
+		<path fill="#d99772" stroke-width="1.5" d="m16 15.5 14-7v15l-14 7z"></path>
+
+		<g fill="none" stroke-width="1.15">
+			<path d="m11.33 3.83 14 7M6.67 6.17l14 7M20.67 3.83l-14 7M25.33 6.17l-14 7"></path>
+			<path d="m2 13.5 14 7M2 18.5l14 7M6.67 10.83v15M11.33 13.17v15"></path>
+			<path d="m16 20.5 14-7M16 25.5l14-7M20.67 13.17v15M25.33 10.83v15"></path>
+		</g>
+	</g></svg>
