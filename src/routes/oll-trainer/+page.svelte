@@ -36,7 +36,6 @@
 				const parsed = JSON.parse(saved);
 				if (
 					Array.isArray(parsed) &&
-					parsed.length > 0 &&
 					parsed.every((id) => Number.isInteger(id) && id >= 1 && id <= 57)
 				) {
 					selectedIds = [...new Set(parsed)];
@@ -138,7 +137,13 @@
 	}
 
 	function nextCase() {
-		if (selectedIds.length === 0) return;
+		if (selectedIds.length === 0) {
+			current = null;
+			currentScramble = '';
+			revealed = false;
+			copied = false;
+			return;
+		}
 		if (deck.length === 0) refillDeck();
 
 		const id = deck.pop();
@@ -154,6 +159,7 @@
 		localStorage.setItem(storageKey, JSON.stringify(selectedIds));
 		deck = [];
 		cyclePosition = 0;
+		if (selectedIds.length === 0) nextCase();
 	}
 
 	function toggleCase(id: number) {
@@ -184,8 +190,11 @@
 	}
 
 	function closeSelector() {
-		if (selectedIds.length === 0) return;
 		selectorOpen = false;
+		if (selectedIds.length === 0) {
+			nextCase();
+			return;
+		}
 		if (!current || !selectedSet.has(current.id)) nextCase();
 	}
 
@@ -244,8 +253,15 @@
 			{/if}
 		</div>
 
-		<button class="scramble" onclick={copyScramble} aria-label="Copy scramble">
-			{#if currentScramble}
+		<button
+			class="scramble"
+			onclick={copyScramble}
+			aria-label={selectedCount === 0 ? 'No cases selected' : 'Copy scramble'}
+			disabled={selectedCount === 0}
+		>
+			{#if selectedCount === 0}
+				<span class="scramble-line empty-message">No cases selected</span>
+			{:else if currentScramble}
 				{#each scrambleLines as line (line)}
 					<span class="scramble-line">{line}</span>
 				{/each}
@@ -256,7 +272,9 @@
 		</button>
 
 		<div class="solution-area" id="algorithm-solution">
-			{#if current && revealed}
+			{#if selectedCount === 0}
+				<button class="reveal" onclick={() => (selectorOpen = true)}>Choose cases</button>
+			{:else if current && revealed}
 				<div class="solution">
 					<div class="solution-header">
 						<div class="case-identity">
@@ -286,10 +304,12 @@
 			{/if}
 		</div>
 
-		<button class="next" onclick={nextCase}>
-			Next case
-			<kbd>Space</kbd>
-		</button>
+		{#if selectedCount > 0}
+			<button class="next" onclick={nextCase}>
+				Next case
+				<kbd>Space</kbd>
+			</button>
+		{/if}
 	</section>
 
 	<footer>
@@ -355,10 +375,10 @@
 			</div>
 
 			<div class="selector-footer">
-				{#if selectedCount === 0}<span>Select at least one case.</span>{:else}<span
+				{#if selectedCount === 0}<span>No cases selected.</span>{:else}<span
 						>Selection saves automatically.</span
 					>{/if}
-				<button class="done" onclick={closeSelector} disabled={selectedCount === 0}>Done</button>
+				<button class="done" onclick={closeSelector}>Done</button>
 			</div>
 		</div>
 	</div>
