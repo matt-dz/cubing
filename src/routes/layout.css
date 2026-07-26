@@ -85,6 +85,55 @@ main {
 	box-shadow: 0 10px 30px rgba(216, 250, 101, 0.12);
 }
 
+.error-page {
+	place-items: center;
+	padding: 24px;
+}
+
+.error-message {
+	text-align: center;
+}
+
+.error-message span {
+	color: var(--accent);
+	font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.16em;
+}
+
+.error-message h1 {
+	margin: 14px 0 8px;
+	font-size: clamp(30px, 5vw, 48px);
+	letter-spacing: -0.045em;
+}
+
+.error-message p {
+	margin: 0;
+	color: var(--muted);
+	font-size: 13px;
+}
+
+.error-message a {
+	display: inline-block;
+	margin-top: 28px;
+	padding: 10px 14px;
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	color: #c9cec5;
+	font-size: 12px;
+	font-weight: 650;
+	text-decoration: none;
+	transition:
+		border-color 150ms ease,
+		color 150ms ease;
+}
+
+.error-message a:hover {
+	border-color: #626a5f;
+	color: #f4f5ef;
+}
+
 header {
 	display: flex;
 	align-items: center;
