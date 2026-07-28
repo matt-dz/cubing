@@ -62,22 +62,31 @@
 	}
 
 	span.yellow {
-		background: #ffd500;
+		--sticker: #d8fa65;
 	}
 
 	span.green {
-		background: #00a651;
+		--sticker: #46d17b;
 	}
 
 	span.orange {
-		background: #ff8c00;
+		--sticker: #ffad3d;
 	}
 
 	span.blue {
-		background: #1557ff;
+		--sticker: #4f7fff;
 	}
 
 	span.red {
-		background: #e31b23;
+		--sticker: #f04464;
+	}
+
+	span.yellow,
+	span.green,
+	span.orange,
+	span.blue,
+	span.red {
+		background: var(--sticker);
+		box-shadow: 0 0 8px color-mix(in srgb, var(--sticker) 18%, transparent);
 	}
 </style>
