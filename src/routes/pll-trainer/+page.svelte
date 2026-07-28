@@ -392,17 +392,11 @@
 			{#if selectedCount === 0}
 				<button class="reveal" onclick={() => (selectorOpen = true)}>Choose cases</button>
 			{:else if current && revealed}
-				<div class="solution pll-solution">
+				<div class="solution">
 					<div class="solution-header">
 						<div class="case-identity">
-							<div class="solution-diagram pll-solution-diagram">
-								<PllDiagram
-									pattern={current.pattern}
-									edgePermutation={current.edgePermutation}
-									cornerPermutation={current.cornerPermutation}
-									showArrows={!current.id.startsWith('G')}
-									label={`PLL ${current.id} diagram`}
-								/>
+							<div class="solution-diagram">
+								<PllDiagram pattern={current.pattern} label={`PLL ${current.id} diagram`} />
 							</div>
 							<div>
 								<span>{current.id}</span>
@@ -566,7 +560,7 @@
 								{groupSelected === groupCases.length ? 'Clear group' : 'Select group'}
 							</button>
 						</div>
-						<div class="case-grid pll-case-grid">
+						<div class="case-grid">
 							{#each groupCases as pll (pll.id)}
 								<button
 									class:selected={selectedSet.has(pll.id)}
@@ -574,13 +568,7 @@
 									onclick={() => toggleCase(pll.id)}
 									aria-pressed={selectedSet.has(pll.id)}
 								>
-									<PllDiagram
-										pattern={pll.pattern}
-										edgePermutation={pll.edgePermutation}
-										cornerPermutation={pll.cornerPermutation}
-										showArrows={!pll.id.startsWith('G')}
-										label={`PLL ${pll.id}`}
-									/>
+									<PllDiagram pattern={pll.pattern} label={`PLL ${pll.id}`} />
 									<span>{pll.id}</span>
 								</button>
 							{/each}
@@ -598,53 +586,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	.pll-solution-diagram {
-		width: 100px;
-		flex: 0 0 100px;
-	}
-
-	.pll-solution {
-		display: grid;
-		grid-template-columns: 100px minmax(0, 1fr) auto;
-		column-gap: 16px;
-		align-items: start;
-	}
-
-	.pll-solution :global(.solution-header),
-	.pll-solution :global(.case-identity) {
-		display: contents;
-	}
-
-	.pll-solution .pll-solution-diagram {
-		grid-row: 1 / 3;
-		grid-column: 1;
-	}
-
-	.pll-solution :global(.case-identity > div:last-child) {
-		grid-row: 1;
-		grid-column: 2;
-	}
-
-	.pll-solution :global(.solution-close) {
-		grid-row: 1;
-		grid-column: 3;
-	}
-
-	.pll-solution :global(p) {
-		grid-row: 2;
-		grid-column: 2 / 4;
-		margin-top: 10px;
-	}
-
-	.pll-case-grid {
-		grid-template-columns: repeat(6, minmax(0, 1fr));
-	}
-
-	@media (max-width: 700px) {
-		.pll-case-grid {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-		}
-	}
-</style>

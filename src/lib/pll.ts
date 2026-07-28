@@ -6,8 +6,6 @@ export type PllCase = {
 	setup: string;
 	algorithm: string;
 	pattern: string;
-	edgePermutation: number[];
-	cornerPermutation: number[];
 };
 
 export const pllCases: PllCase[] = data;
