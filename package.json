@@ -14,6 +14,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
 		"generate:oll-scrambles": "node scripts/generate-oll-scrambles.mjs",
+		"generate:pll-scrambles": "node scripts/generate-pll-scrambles.mjs",
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
