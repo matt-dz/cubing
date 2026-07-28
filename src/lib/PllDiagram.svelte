@@ -15,11 +15,13 @@
 		pattern,
 		edgePermutation,
 		cornerPermutation,
+		showArrows = true,
 		label = ''
 	}: {
 		pattern: string;
 		edgePermutation: Permutation;
 		cornerPermutation: Permutation;
+		showArrows?: boolean;
 		label?: string;
 	} = $props();
 
@@ -49,16 +51,16 @@
 
 	const positions: Record<ArrowKind, Point[]> = {
 		edge: [
-			{ x: 50, y: 68 },
-			{ x: 68, y: 50 },
-			{ x: 50, y: 32 },
-			{ x: 32, y: 50 }
+			{ x: 50, y: 75 },
+			{ x: 75, y: 50 },
+			{ x: 50, y: 25 },
+			{ x: 25, y: 50 }
 		],
 		corner: [
-			{ x: 65, y: 65 },
-			{ x: 65, y: 35 },
-			{ x: 35, y: 35 },
-			{ x: 35, y: 65 }
+			{ x: 73, y: 73 },
+			{ x: 73, y: 27 },
+			{ x: 27, y: 27 },
+			{ x: 27, y: 73 }
 		]
 	};
 
@@ -74,7 +76,7 @@
 			const dx = end.x - start.x;
 			const dy = end.y - start.y;
 			const distance = Math.hypot(dx, dy);
-			const inset = kind === 'edge' ? 4.5 : 4;
+			const inset = 5;
 
 			return [
 				{
@@ -108,17 +110,17 @@
 			style={`grid-row:${cell.row};grid-column:${cell.col}`}
 		></span>
 	{/each}
-	<div class="arrows" aria-hidden="true">
-		{#each arrows as arrow, index (`${arrow.kind}-${index}`)}
-			<span
-				class="arrow"
-				class:edge={arrow.kind === 'edge'}
-				class:corner={arrow.kind === 'corner'}
-				class:bidirectional={arrow.bidirectional}
-				style={`--x:${arrow.x}%;--y:${arrow.y}%;--length:${arrow.length}%;--angle:${arrow.angle}deg`}
-			></span>
-		{/each}
-	</div>
+	{#if showArrows}
+		<div class="arrows" aria-hidden="true">
+			{#each arrows as arrow, index (`${arrow.kind}-${index}`)}
+				<span
+					class="arrow"
+					class:bidirectional={arrow.bidirectional}
+					style={`--x:${arrow.x}%;--y:${arrow.y}%;--length:${arrow.length}%;--angle:${arrow.angle}deg`}
+				></span>
+			{/each}
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -128,7 +130,7 @@
 		grid-template:
 			0.5fr repeat(3, 1fr) 0.5fr /
 			0.5fr repeat(3, 1fr) 0.5fr;
-		gap: 2px;
+		gap: 1px;
 		width: 100%;
 		aspect-ratio: 1;
 	}
@@ -175,19 +177,11 @@
 		left: var(--x);
 		top: var(--y);
 		width: var(--length);
-		height: 2px;
+		height: 4px;
 		border-radius: 999px;
+		background: #11140e;
 		transform: translateY(-50%) rotate(var(--angle));
 		transform-origin: left center;
-		filter: drop-shadow(0 0 1px #1a1d1a);
-	}
-
-	.arrow.edge {
-		background: #dd6f6f;
-	}
-
-	.arrow.corner {
-		background: #4d7fc8;
 	}
 
 	.arrow::after,
@@ -197,26 +191,18 @@
 		width: 0;
 		height: 0;
 		content: '';
-		border-top: 4px solid transparent;
-		border-bottom: 4px solid transparent;
+		border-top: 6px solid transparent;
+		border-bottom: 6px solid transparent;
 		transform: translateY(-50%);
 	}
 
 	.arrow::after {
 		right: -1px;
-		border-left: 6px solid #dd6f6f;
-	}
-
-	.arrow.corner::after {
-		border-left-color: #4d7fc8;
+		border-left: 9px solid #11140e;
 	}
 
 	.arrow.bidirectional::before {
 		left: -1px;
-		border-right: 6px solid #dd6f6f;
-	}
-
-	.arrow.corner.bidirectional::before {
-		border-right-color: #4d7fc8;
+		border-right: 9px solid #11140e;
 	}
 </style>

@@ -90,8 +90,8 @@ export const pllCases = [
 		setup: "L' R' U2' R U R' U2' L U' R y'",
 		algorithm: "y (R' U L') U2 (R U' R') U2 R L",
 		pattern: 'yyyyyyyyybbgrrroobggo',
-		edgePermutation: [3, 0, 2, 1],
-		cornerPermutation: [3, 1, 0, 2]
+		edgePermutation: [0, 1, 3, 2],
+		cornerPermutation: [0, 2, 1, 3]
 	},
 	{
 		id: 'Jb',
@@ -99,8 +99,8 @@ export const pllCases = [
 		setup: "R U R2' F' R U R U' R' F R U' R'",
 		algorithm: "(R U R' F') (R U R' U') R' F R2 U' R'",
 		pattern: 'yyyyyyyyygoorggbbborr',
-		edgePermutation: [0, 3, 1, 2],
-		cornerPermutation: [0, 3, 1, 2]
+		edgePermutation: [1, 0, 2, 3],
+		cornerPermutation: [1, 0, 2, 3]
 	},
 	{
 		id: 'Na',
@@ -126,8 +126,8 @@ export const pllCases = [
 		setup: "R U2' R D R' U R D' R' U' R' U R U R' y'",
 		algorithm: "y (R U' R' U') (R U R D) (R' U' R D') (R' U2 R')",
 		pattern: 'yyyyyyyyygborrgbobogr',
-		edgePermutation: [3, 0, 2, 1],
-		cornerPermutation: [0, 3, 1, 2]
+		edgePermutation: [0, 1, 3, 2],
+		cornerPermutation: [1, 0, 2, 3]
 	},
 	{
 		id: 'Rb',
@@ -135,8 +135,8 @@ export const pllCases = [
 		setup: "R' U R U R' U' R' D' R U R' D R U2' R",
 		algorithm: "(R' U2) (R U2) (R' F R) (U R' U' R') F' R2",
 		pattern: 'yyyyyyyyybogrgrobbgro',
-		edgePermutation: [0, 3, 1, 2],
-		cornerPermutation: [3, 1, 0, 2]
+		edgePermutation: [1, 0, 2, 3],
+		cornerPermutation: [0, 2, 1, 3]
 	},
 	{
 		id: 'T',
@@ -189,7 +189,7 @@ export const pllCases = [
 		setup: "M U2' M2' U2' M U' M2' U' M2'",
 		algorithm: "(M2 U) (M2 U) (M' U2) M2 (U2 M')",
 		pattern: 'yyyyyyyyygogbrbogorbr',
-		edgePermutation: [3, 2, 1, 0],
-		cornerPermutation: [2, 3, 0, 1]
+		edgePermutation: [1, 0, 3, 2],
+		cornerPermutation: [0, 1, 2, 3]
 	}
 ];
