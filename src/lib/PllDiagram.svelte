@@ -146,23 +146,23 @@
 	}
 
 	.sticker.yellow {
-		background: #d8fa65;
+		background: #ffd500;
 	}
 
 	.sticker.green {
-		background: #63b985;
+		background: #00a651;
 	}
 
 	.sticker.orange {
-		background: #e89b5b;
+		background: #ff8c00;
 	}
 
 	.sticker.blue {
-		background: #6f9fe7;
+		background: #1557ff;
 	}
 
 	.sticker.red {
-		background: #dd6f6f;
+		background: #e31b23;
 	}
 
 	.arrows {
