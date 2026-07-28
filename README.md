@@ -1,55 +1,66 @@
 # Cubing
 
-A minimal, personal speedcubing practice site built with SvelteKit. The current tool is a
-3×3 OLL trainer covering all 57 one-look OLL cases.
+A minimal, personal speedcubing practice site built with SvelteKit. It currently includes
+3×3 trainers for all 57 one-look OLL cases and all 21 PLL cases.
 
-## OLL trainer
+## Trainers
 
-The trainer is available at `/oll-trainer` and includes:
+The OLL and PLL trainers are available at `/oll-trainer` and `/pll-trainer`. Both include:
 
-- All 57 OLL cases, organised by shape
+- All cases selected by default
 - Case, group, select-all, and clear-all controls
-- Browser-local selection persistence
-- All cases selected by default for new users
+- Browser-local selection and starred-case persistence
 - Balanced case rotation: every selected case appears once before reshuffling
-- Balanced AUF exposure across four hidden case orientations
+- Balanced exposure across four hidden case orientations
 - 40 verified scrambles per case, with ten for each orientation
 - Algorithms hidden behind an optional reveal control
-- Space-bar navigation to the next case
+- Starred review that repeats until every starred case is removed
+- Exact previous/next scramble history
+- Keyboard controls: `S` to star, Left Arrow for previous, and Space or Right Arrow for next
 
-Algorithms are based on the
-[SpeedCubeDB 3×3 OLL collection](https://speedcubedb.com/a/3x3/OLL).
+OLL cases are organised by shape. PLL cases are organised by permutation type.
+
+Algorithms are based on SpeedCubeDB's
+[3×3 OLL](https://speedcubedb.com/a/3x3/OLL) and
+[3×3 PLL](https://speedcubedb.com/a/3x3/PLL) collections.
 
 ## Scramble generation
 
-Scrambles are generated offline and stored in
-`src/lib/generated/oll-scrambles.json`. The browser does not run a solver.
+Scrambles are generated offline and stored in:
 
-The generator verifies that every scramble:
+- `src/lib/generated/oll-scrambles.json`
+- `src/lib/generated/pll-scrambles.json`
 
-- Preserves solved F2L
-- Produces the intended OLL orientation
-- Uses only outer face turns
-- Contains no cube rotations, slice moves, or wide moves
-- Does not end with a U-layer move that reveals the hidden orientation
+The browser never runs a solver. Both generators require every scramble to:
 
-Generate a fresh pool with the default deterministic seed:
+- Preserve solved F2L
+- Use only outer face turns
+- Contain no cube rotations, slice moves, or wide moves
+- Avoid a final U-layer move that reveals the hidden orientation
+
+The OLL generator verifies the intended last-layer orientation while allowing a random
+last-layer permutation. The PLL generator preserves solved OLL and verifies the exact
+intended last-layer permutation.
+
+Generate either deterministic scramble pool with:
 
 ```sh
 npm run generate:oll-scrambles
+npm run generate:pll-scrambles
 ```
 
-Optional generator arguments can be passed after `--`:
+Optional arguments can be passed after `--`:
 
 ```sh
-npm run generate:oll-scrambles -- \
-  --seed=oll-scrambles-v2 \
+npm run generate:pll-scrambles -- \
+  --seed=pll-scrambles-v2 \
   --count=10 \
-  --min-moves=16
+  --min-moves=14 \
+  --max-moves=25
 ```
 
 `--count` controls the number of scrambles per case orientation. The default of ten
-produces 40 scrambles for each OLL and 2,280 scrambles in total.
+produces 2,280 OLL scrambles and 840 PLL scrambles.
 
 ## Local development
 
