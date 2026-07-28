@@ -396,10 +396,15 @@
 					<div class="solution-header">
 						<div class="case-identity">
 							<div class="solution-diagram">
-								<PllDiagram pattern={current.pattern} label={`PLL ${current.id} diagram`} />
+								<PllDiagram
+									pattern={current.pattern}
+									edgePermutation={current.edgePermutation}
+									cornerPermutation={current.cornerPermutation}
+									label={`PLL ${current.id} diagram`}
+								/>
 							</div>
 							<div>
-								<span>PLL {current.id}</span>
+								<span>{current.id}</span>
 								<small>{current.group}</small>
 							</div>
 						</div>
@@ -568,8 +573,13 @@
 									onclick={() => toggleCase(pll.id)}
 									aria-pressed={selectedSet.has(pll.id)}
 								>
-									<PllDiagram pattern={pll.pattern} label={`PLL ${pll.id}`} />
-									<span>PLL {pll.id}</span>
+									<PllDiagram
+										pattern={pll.pattern}
+										edgePermutation={pll.edgePermutation}
+										cornerPermutation={pll.cornerPermutation}
+										label={`PLL ${pll.id}`}
+									/>
+									<span>{pll.id}</span>
 								</button>
 							{/each}
 						</div>
