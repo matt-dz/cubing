@@ -8,7 +8,7 @@ import { pllCases } from '../src/lib/pll-data.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outputPath = resolve(root, 'src/lib/generated/pll-scrambles.json');
-const seed = readArgument('seed') ?? 'pll-scrambles-v1';
+const seed = readArgument('seed') ?? 'pll-scrambles-v2';
 const scramblesPerOrientation = Number(readArgument('count') ?? 10);
 const minimumMoves = Number(readArgument('min-moves') ?? 14);
 const maximumMoves = Number(readArgument('max-moves') ?? 25);
@@ -45,7 +45,7 @@ const f2lIndices = {
 setSearchDebug({ logPerf: false, scramblePrefetchLevel: 'none' });
 
 const generated = {
-	version: 1,
+	version: 2,
 	seed,
 	scramblesPerOrientation,
 	orientations: orientations.map(({ id }) => id),
@@ -70,7 +70,6 @@ for (const pll of pllCases) {
 			length: 0,
 			finalU: 0,
 			notation: 0,
-			reducible: 0,
 			duplicate: 0
 		};
 
@@ -94,8 +93,9 @@ for (const pll of pllCases) {
 			const correctionPattern = correctionTransformation.toKPattern();
 			const solution = await experimentalSolve3x3x3IgnoringCenters(correctionPattern);
 			const correction = normalizeMoves(solution.invert().toString());
-			const scramble = joinAlgs(prefix, correction);
-			const moves = scramble.split(/\s+/).filter(Boolean);
+			const rawMoves = joinAlgs(prefix, correction).split(/\s+/).filter(Boolean);
+			const moves = simplifyCommutingMoves(rawMoves);
+			const scramble = moves.join(' ');
 
 			if (moves.length < minimumMoves || moves.length > maximumMoves) {
 				rejections.length += 1;
@@ -109,9 +109,8 @@ for (const pll of pllCases) {
 				rejections.notation += 1;
 				continue;
 			}
-			if (hasAdjacentSameFace(moves)) {
-				rejections.reducible += 1;
-				continue;
+			if (hasRepeatedFaceWithinAxisRun(moves)) {
+				throw new Error(`PLL ${pll.id} (${orientation.id}) produced a reducible scramble.`);
 			}
 			if (usedScrambles.has(scramble)) {
 				rejections.duplicate += 1;
@@ -187,8 +186,68 @@ function isOuterFaceMove(move) {
 	return /^[RLUDFB](?:2|')?$/.test(move);
 }
 
-function hasAdjacentSameFace(moves) {
-	return moves.some((move, index) => index > 0 && move[0] === moves[index - 1][0]);
+function simplifyCommutingMoves(moves) {
+	const simplified = [];
+
+	for (const move of moves) {
+		const axis = faceAxis(move[0]);
+		let groupStart = simplified.length;
+
+		while (groupStart > 0 && faceAxis(simplified[groupStart - 1][0]) === axis) {
+			groupStart -= 1;
+		}
+
+		const group = [...simplified.splice(groupStart), move];
+		const faceOrder = [];
+		const turnsByFace = new Map();
+
+		for (const groupMove of group) {
+			const face = groupMove[0];
+			if (!turnsByFace.has(face)) faceOrder.push(face);
+			turnsByFace.set(face, ((turnsByFace.get(face) ?? 0) + quarterTurns(groupMove)) % 4);
+		}
+
+		for (const face of faceOrder) {
+			const turns = turnsByFace.get(face);
+			if (turns) simplified.push(formatMove(face, turns));
+		}
+	}
+
+	return simplified;
+}
+
+function hasRepeatedFaceWithinAxisRun(moves) {
+	for (let index = 0; index < moves.length;) {
+		const axis = faceAxis(moves[index][0]);
+		const faces = new Set();
+
+		while (index < moves.length && faceAxis(moves[index][0]) === axis) {
+			const face = moves[index][0];
+			if (faces.has(face)) return true;
+			faces.add(face);
+			index += 1;
+		}
+	}
+
+	return false;
+}
+
+function faceAxis(face) {
+	if (face === 'R' || face === 'L') return 'x';
+	if (face === 'U' || face === 'D') return 'y';
+	return 'z';
+}
+
+function quarterTurns(move) {
+	if (move.endsWith('2')) return 2;
+	if (move.endsWith("'")) return 3;
+	return 1;
+}
+
+function formatMove(face, turns) {
+	if (turns === 1) return face;
+	if (turns === 2) return `${face}2`;
+	return `${face}'`;
 }
 
 function unchangedIndices(a, b, orbit) {
