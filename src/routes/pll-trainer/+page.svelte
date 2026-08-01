@@ -324,14 +324,7 @@
 			event.target instanceof HTMLElement &&
 			['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName);
 
-		if (
-			event.code === 'Space' &&
-			!selectorOpen &&
-			!helpOpen &&
-			!statsOpen &&
-			!event.repeat &&
-			!targetIsInteractive
-		) {
+		if (event.code === 'Space' && !selectorOpen && !helpOpen && !statsOpen && !event.repeat) {
 			event.preventDefault();
 			if (current && selectedCount > 0) timer.toggle(current.id, phase);
 			return;
