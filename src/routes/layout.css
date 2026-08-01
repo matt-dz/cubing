@@ -518,9 +518,16 @@ header {
 		background 130ms ease;
 }
 
-.next:hover {
+.next:hover:not(:disabled) {
 	border-color: #356fae;
 	background: #b2cff0;
+}
+
+.next:disabled {
+	border-color: #536b84;
+	background: #617e9f;
+	cursor: not-allowed;
+	opacity: 0.48;
 }
 
 .key-hints {
