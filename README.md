@@ -36,6 +36,7 @@ The browser never runs a solver. Both generators require every scramble to:
 - Preserve solved F2L
 - Use only outer face turns
 - Contain no cube rotations, slice moves, or wide moves
+- Contain no reducible sequences hidden by commuting opposite-face turns
 - Avoid a final U-layer move that reveals the hidden orientation
 
 The OLL generator verifies the intended last-layer orientation while allowing a random
