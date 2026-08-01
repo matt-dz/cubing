@@ -21,6 +21,7 @@ export class TrainerTimer {
 	#startedAt = 0;
 	#caseId = '';
 	#phase: TimerPhase = 'regular';
+	#displayedSolveId: string | null = null;
 
 	constructor(storageKey: string) {
 		this.#storageKey = storageKey;
@@ -64,8 +65,8 @@ export class TrainerTimer {
 			: durations[middle];
 	}
 
-	get recentSolves() {
-		return [...this.solves].reverse().slice(0, 20);
+	get solveHistory() {
+		return [...this.solves].reverse();
 	}
 
 	load() {
@@ -99,6 +100,7 @@ export class TrainerTimer {
 
 		this.#caseId = String(caseId);
 		this.#phase = phase;
+		this.#displayedSolveId = null;
 		this.elapsedMs = 0;
 		this.#startedAt = performance.now();
 		this.running = true;
@@ -123,23 +125,26 @@ export class TrainerTimer {
 
 		this.solves = [...this.solves, solve].slice(-maximumStoredSolves);
 		this.sessionSolveIds = [...this.sessionSolveIds, solve.id];
+		this.#displayedSolveId = solve.id;
 		this.#persist();
 		return solve;
 	}
 
 	resetDisplay() {
-		if (!this.running) this.elapsedMs = 0;
+		if (this.running) return;
+		this.#displayedSolveId = null;
+		this.elapsedMs = 0;
 	}
 
-	deleteLast() {
-		if (this.running || this.solves.length === 0) return;
+	deleteSolve(solveId: string) {
+		if (this.running || !this.solves.some((solve) => solve.id === solveId)) return;
 
-		const deleted = this.solves.at(-1);
-		this.solves = this.solves.slice(0, -1);
-		if (deleted) {
-			this.sessionSolveIds = this.sessionSolveIds.filter((id) => id !== deleted.id);
+		this.solves = this.solves.filter((solve) => solve.id !== solveId);
+		this.sessionSolveIds = this.sessionSolveIds.filter((id) => id !== solveId);
+		if (this.#displayedSolveId === solveId) {
+			this.#displayedSolveId = null;
+			this.elapsedMs = 0;
 		}
-		this.elapsedMs = this.solves.at(-1)?.durationMs ?? 0;
 		this.#persist();
 	}
 

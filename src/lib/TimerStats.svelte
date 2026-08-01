@@ -58,19 +58,16 @@
 
 		<div class="recent-header">
 			<div>
-				<h3>Recent solves</h3>
+				<h3>Solve history</h3>
 				<span>Saved on this browser</span>
 			</div>
-			<button onclick={() => timer.deleteLast()} disabled={timer.solves.length === 0}
-				>Delete last</button
-			>
 		</div>
 
 		<div class="recent-solves">
-			{#if timer.recentSolves.length === 0}
+			{#if timer.solveHistory.length === 0}
 				<p>No timed solves yet.</p>
 			{:else}
-				{#each timer.recentSolves as solve (solve.id)}
+				{#each timer.solveHistory as solve (solve.id)}
 					<div class="solve-row">
 						<div>
 							<strong>{trainerName} {solve.caseId}</strong>
@@ -78,6 +75,12 @@
 						</div>
 						{#if solve.phase === 'starred'}<small>STARRED</small>{/if}
 						<output>{formatDuration(solve.durationMs)}</output>
+						<button
+							class="delete-solve"
+							onclick={() => timer.deleteSolve(solve.id)}
+							aria-label={`Delete ${trainerName} ${solve.caseId} time ${formatDuration(solve.durationMs)}`}
+							title="Delete time">×</button
+						>
 					</div>
 				{/each}
 			{/if}

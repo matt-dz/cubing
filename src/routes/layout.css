@@ -786,7 +786,7 @@ footer a:hover {
 .solve-row {
 	display: grid;
 	min-height: 52px;
-	grid-template-columns: 1fr auto auto;
+	grid-template-columns: 1fr auto auto 26px;
 	gap: 14px;
 	align-items: center;
 	border-top: 1px solid #242a23;
@@ -808,6 +808,7 @@ footer a:hover {
 }
 
 .solve-row small {
+	grid-column: 2;
 	color: #9fb77c;
 	font-size: 8px;
 	font-weight: 750;
@@ -815,12 +816,36 @@ footer a:hover {
 }
 
 .solve-row output {
+	grid-column: 3;
 	min-width: 62px;
 	font-family: 'SFMono-Regular', Consolas, monospace;
 	font-size: 13px;
 	font-variant-numeric: tabular-nums;
 	font-weight: 650;
 	text-align: right;
+}
+
+.delete-solve {
+	display: grid;
+	grid-column: 4;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border: 1px solid #343b32;
+	border-radius: 5px;
+	background: transparent;
+	color: #747c71;
+	cursor: pointer;
+	font-size: 16px;
+	line-height: 1;
+	place-items: center;
+}
+
+.delete-solve:hover,
+.delete-solve:focus-visible {
+	border-color: #a86565;
+	background: #2a1b1b;
+	color: #f1b0b0;
 }
 
 .help-header {
