@@ -2,11 +2,15 @@
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import PllDiagram from '$lib/PllDiagram.svelte';
+	import TimerDisplay from '$lib/TimerDisplay.svelte';
+	import TimerStats from '$lib/TimerStats.svelte';
 	import scrambleData from '$lib/generated/pll-scrambles.json';
 	import { pllCases, pllGroups, type PllCase } from '$lib/pll';
+	import { TrainerTimer } from '$lib/trainer-timer.svelte';
 
 	const selectionStorageKey = 'pll-trainer-selected-v1';
 	const starredStorageKey = 'pll-trainer-starred-v1';
+	const timerStorageKey = 'pll-trainer-times-v1';
 	type Orientation = '0' | 'U' | 'U2' | "U'";
 	type TrainingPhase = 'regular' | 'starred';
 	type ScramblePools = Record<string, Record<Orientation, string[]>>;
@@ -22,6 +26,7 @@
 	const scramblePools = scrambleData.cases as ScramblePools;
 	const validCaseIds = new Set(pllCases.map((pll) => pll.id));
 	const caseOrder = new Map(pllCases.map((pll, index) => [pll.id, index]));
+	const timer = new TrainerTimer(timerStorageKey);
 
 	let selectedIds = $state<string[]>(pllCases.map((pll) => pll.id));
 	let starredIds = $state<string[]>([]);
@@ -31,6 +36,7 @@
 	let revealed = $state(false);
 	let selectorOpen = $state(false);
 	let helpOpen = $state(false);
+	let statsOpen = $state(false);
 	let copied = $state(false);
 	let phase = $state<TrainingPhase>('regular');
 	let cyclePosition = $state(0);
@@ -51,7 +57,10 @@
 	onMount(() => {
 		selectedIds = readStoredIds(selectionStorageKey, selectedIds);
 		starredIds = readStoredIds(starredStorageKey, []);
+		timer.load();
 		nextCase();
+
+		return () => timer.destroy();
 	});
 
 	function readStoredIds(key: string, fallback: string[]) {
@@ -178,6 +187,9 @@
 	}
 
 	function nextCase() {
+		if (timer.running) return;
+		timer.resetDisplay();
+
 		if (historyIndex < history.length - 1) {
 			historyIndex += 1;
 			showHistoryEntry(history[historyIndex]);
@@ -217,7 +229,8 @@
 	}
 
 	function previousCase() {
-		if (!canGoPrevious) return;
+		if (timer.running || !canGoPrevious) return;
+		timer.resetDisplay();
 		historyIndex -= 1;
 		showHistoryEntry(history[historyIndex]);
 	}
@@ -300,9 +313,10 @@
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape' && (selectorOpen || helpOpen)) {
+		if (event.key === 'Escape' && (selectorOpen || helpOpen || statsOpen)) {
 			if (selectorOpen) closeSelector();
 			helpOpen = false;
+			statsOpen = false;
 			return;
 		}
 
@@ -310,10 +324,17 @@
 			event.target instanceof HTMLElement &&
 			['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName);
 
+		if (event.code === 'Space' && !selectorOpen && !helpOpen && !statsOpen && !event.repeat) {
+			event.preventDefault();
+			if (current && selectedCount > 0) timer.toggle(current.id, phase);
+			return;
+		}
+
 		if (
 			event.key.toLowerCase() === 's' &&
 			!selectorOpen &&
 			!helpOpen &&
+			!statsOpen &&
 			!event.repeat &&
 			!targetIsInteractive
 		) {
@@ -322,7 +343,7 @@
 			return;
 		}
 
-		if (selectorOpen || helpOpen || event.repeat || targetIsInteractive) {
+		if (selectorOpen || helpOpen || statsOpen || event.repeat || targetIsInteractive) {
 			return;
 		}
 
@@ -332,7 +353,7 @@
 			return;
 		}
 
-		if (event.code !== 'Space' && event.key !== 'ArrowRight') return;
+		if (event.key !== 'ArrowRight') return;
 		event.preventDefault();
 		nextCase();
 	}
@@ -355,7 +376,7 @@
 			<span class="brand-mark"></span>
 			<h1>3×3 PLL Trainer</h1>
 		</a>
-		<button class="case-button" onclick={() => (selectorOpen = true)}>
+		<button class="case-button" onclick={() => (selectorOpen = true)} disabled={timer.running}>
 			<span>{selectedCount}</span> cases
 		</button>
 	</header>
@@ -387,6 +408,14 @@
 			{/if}
 			<span class:visible={copied} class="copy-note">{copied ? 'Copied' : 'Click to copy'}</span>
 		</button>
+
+		<TimerDisplay
+			{timer}
+			caseId={current?.id ?? null}
+			{phase}
+			disabled={selectedCount === 0}
+			onstats={() => (statsOpen = true)}
+		/>
 
 		<div class="solution-area" id="algorithm-solution">
 			{#if selectedCount === 0}
@@ -435,14 +464,17 @@
 					<kbd>S</kbd>
 				</button>
 				<div class="case-navigation">
-					<button class="previous" onclick={previousCase} disabled={!canGoPrevious}>
+					<button
+						class="previous"
+						onclick={previousCase}
+						disabled={!canGoPrevious || timer.running}
+					>
 						Previous
 						<kbd>←</kbd>
 					</button>
-					<button class="next" onclick={nextCase}>
+					<button class="next" onclick={nextCase} disabled={timer.running}>
 						Next case
 						<span class="key-hints">
-							<kbd>Space</kbd>
 							<kbd>→</kbd>
 						</span>
 					</button>
@@ -497,10 +529,14 @@
 					<span>Click it to copy, then identify and solve the PLL case on your cube.</span>
 				</li>
 				<li>
-					<strong>Advance when ready.</strong>
+					<strong>Time each solve.</strong>
 					<span
-						>Use Next, Space, or Right Arrow. Previous or Left Arrow restores the exact earlier
-						scramble.</span
+						>Press Space to start and Space again to stop. The completed time stays visible.</span
+					>
+				</li>
+				<li>
+					<strong>Advance when ready.</strong>
+					<span>Use Next or Right Arrow. Previous or Left Arrow restores the earlier scramble.</span
 					>
 				</li>
 				<li>
@@ -514,6 +550,12 @@
 						every case.</span
 					>
 				</li>
+				<li>
+					<strong>Review your times.</strong>
+					<span
+						>Stats includes your best, session mean and median, solve count, and recent history.</span
+					>
+				</li>
 			</ol>
 
 			<p class="help-note">
@@ -521,6 +563,10 @@
 			</p>
 		</div>
 	</div>
+{/if}
+
+{#if statsOpen}
+	<TimerStats {timer} trainerName="PLL" onclose={() => (statsOpen = false)} />
 {/if}
 
 {#if selectorOpen}
